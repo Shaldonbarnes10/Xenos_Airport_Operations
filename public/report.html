@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - XENOS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Reports</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="flights.html">Flights</a></li>
+                <li><a href="passengers.html">Passengers</a></li>
+                <li><a href="reports.html">Reports</a></li>
+                <li><a href="index.html">Logout</a></li>
+            </ul>
+        </nav>
+
+        <section class="report-section">
+            <h2>Generate Reports</h2>
+            <form action="generate_report.php" method="POST">
+                <label for="report-type">Select Report Type:</label>
+                <select id="report-type" name="report-type">
+                    <option value="flight">Flight Report</option>
+                    <option value="passenger">Passenger Report</option>
+                    <option value="financial">Financial Report</option>
+                </select>
+                <button type="submit">Generate</button>
+            </form>
+        </section>
+
+        <section class="report-history">
+            <h2>Previous Reports</h2>
+            <ul>
+                <li><a href="#">Flight Report - March 2025</a></li>
+                <li><a href="#">Passenger Report - March 2025</a></li>
+                <li><a href="#">Financial Report - February 2025</a></li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>

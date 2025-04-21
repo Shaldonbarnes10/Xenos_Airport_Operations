@@ -1,0 +1,49 @@
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4; /* Fallback color */
+    background-image: url('pic.jpg'); /* Add a leading slash *//* Using the filename directly */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px; /* Limit container width */
+}
+
+input {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd; /* Add a border for better visibility */
+    border-radius: 4px; /* Add some rounded corners */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px; /* Add some rounded corners */
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+/* Add some spacing to the link */
+p {
+    margin-top: 15px;
+    text-align: center;
+}
