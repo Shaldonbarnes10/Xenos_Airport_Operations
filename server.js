@@ -2,6 +2,29 @@ const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 
+const nodemailer = require('nodemailer');
+
+// Configure transporter
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'shaldonbarnes07@gmail.com',      // replace with your Gmail
+        pass: 'nxre ocwl ogyo kjmj'          // use App Password from Gmail settings
+    }
+});
+
+// Send email function
+const sendWelcomeEmail = (toemail, username) => {
+    const mailOptions = {
+        from: 'shaldonbarnes07@gmail.com',
+        to: toemail,
+        subject: 'Welcome to Airport Admin Panel',
+        html: `<h3>Hi ${username},</h3><p>Welcome! You’ve successfully signed up as an <b>Admin User</b>.</p>`
+    };
+
+    return transporter.sendMail(mailOptions);
+};
+
 const app = express();
 const port = 3000;
 
@@ -47,12 +70,16 @@ app.post('/api/signup', async (req, res) => {
             [username, password, designation]
         );
 
-        res.status(201).json({ message: 'User created successfully' });
+        // Send welcome email
+        await sendWelcomeEmail(username, username); // assuming username is the email
+
+        res.status(201).json({ message: 'User created successfully, email sent.' });
     } catch (error) {
         console.error('Error during signup:', error);
         res.status(500).json({ message: 'Failed to create user' });
     }
 });
+
 
 // Signin endpoint
 app.post('/api/signin', async (req, res) => {
