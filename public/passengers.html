@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Passengers Information</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="flights-container">
+    <h1>Passengers Information</h1>
+
+    <form id="passengerForm">
+        <input type="text" id="pass_name" placeholder="Name" required>
+        <input type="text" id="flight_name" placeholder="Flight Name" required>
+        <input type="text" id="flight_no" placeholder="Flight Number" required>
+        <input type="datetime-local" id="dept_time" required>
+        <button type="submit">Add Passenger</button>
+    </form>    
+
+    <table>
+        <thead>
+            <tr>
+                <th>Customer ID</th>
+                <th>Customer Name</th>
+                <th>Flight Name</th>
+                <th>Flight Number</th>
+                <th>Departure Time</th>
+            </tr>
+        </thead>
+        <tbody id="passengerTableBody">
+            <!-- Rows inserted by JS -->
+        </tbody>
+    </table>
+
+    <a href="landingPage.html">Back to Home</a>
+</div>
+
+<script src="passengerscript.js"></script>
+</body>
+</html>

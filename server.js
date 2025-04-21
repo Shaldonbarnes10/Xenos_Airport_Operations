@@ -8,22 +8,34 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'shaldonbarnes07@gmail.com',      // replace with your Gmail
-        pass: 'nxre ocwl ogyo kjmj'          // use App Password from Gmail settings
+        user: 'shaldonbarnes07@gmail.com',
+        pass: 'nxre ocwl ogyo kjmj'
     }
 });
 
 // Send email function
 const sendWelcomeEmail = (toemail, username) => {
+    const now = new Date().toLocaleString();
     const mailOptions = {
         from: 'shaldonbarnes07@gmail.com',
         to: toemail,
-        subject: 'Welcome to Airport Admin Panel',
-        html: `<h3>Hi ${username},</h3><p>Welcome! You’ve successfully signed up as an <b>Admin User</b>.</p>`
+        subject: 'Welcome to Xenos Airport Admin Panel ✈️',
+        html: `<h3>Hi ${username},</h3><p>Welcome! You’ve successfully signed up as an <b>Admin User</b> at ${now}.</p>`
     };
-
     return transporter.sendMail(mailOptions);
 };
+
+const sendSigninEmail = (toemail, username) => {
+    const now = new Date().toLocaleString();
+    const mailOptions = {
+        from: 'shaldonbarnes07@gmail.com',
+        to: toemail,
+        subject: 'Xenos✈️ Signed in Sucessfully!!',
+        html: `<h3>Hi ${username},</h3><p>Welcome! You’ve successfully signed in at ${now}</p><p> Visit our website to avail exceptional airport management services</p>`
+    };
+    return transporter.sendMail(mailOptions);
+};
+
 
 const app = express();
 const port = 3000;
@@ -94,7 +106,7 @@ app.post('/api/signin', async (req, res) => {
         if (user.rows[0].password !== password) {
             return res.status(401).json({ message: 'Invalid password' });
         }
-
+        await sendSigninEmail(username, username);
         res.status(200).json({ message: 'Signin successful' });
     } catch (error) {
         console.error('Error during signin:', error);
@@ -109,7 +121,6 @@ app.post('/api/flights', async (req, res) => {
         return res.status(400).json({ message: 'Missing required flight or gate data.' });
     }
 
-    // const formatTime = (t) => /^\\d{2}:\d{2}(:\d{2})?$/.test(t) ? (t.length === 5 ? t + ':00' : t) : null;
     const deptTimeFormatted = (dept_time);
     const arrTimeFormatted = (arr_time);
     const gateIdInt = parseInt(gate_id);
@@ -168,6 +179,38 @@ app.delete('/api/flights/:id', async (req, res) => {
         res.status(500).json({ message: 'Failed to delete flight.' });
     }
 });
+
+
+// Get all passengers
+app.get('/api/passengers', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM PASSENGERS ORDER BY pass_id'
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching passengers:', error);
+        res.status(500).json({ message: 'Failed to fetch passengers' });
+    }
+});
+
+// Insert a new passenger
+app.post('/api/passengers', async (req, res) => {
+    const { pass_name, flight_name, flight_no, dept_time } = req.body;
+    try {
+        await pool.query(
+            `INSERT INTO PASSENGERS (pass_name, flight_name, flight_no, dept_time) 
+             VALUES ($1, $2, $3, $4)`,
+            [pass_name, flight_name, flight_no, dept_time]
+        );
+        res.status(201).json({ message: 'Passenger added successfully' });
+    } catch (error) {
+        console.error('Error adding passenger:', error);
+        res.status(500).json({ message: 'Failed to add passenger' });
+    }
+});
+
+
 
 // Start server
 app.listen(port, () => {
