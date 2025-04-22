@@ -1,3 +1,5 @@
 nodemailer
+express
+pg
 express-session
 pdfkit
