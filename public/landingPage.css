@@ -1,0 +1,56 @@
+/* Base Page Style */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: url('pic.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Landing Container */
+.landing-container {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 40px 60px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* Header */
+h1 {
+    font-size: 36px;
+    color: #007bff;
+    margin-bottom: 30px;
+}
+
+/* Navigation Styles */
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+nav ul li {
+    margin: 15px 0;
+}
+
+nav ul li a {
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    padding: 12px 24px;
+    border-radius: 10px;
+    background-color: #e9f1ff;
+    transition: background-color 0.3s, color 0.3s;
+    display: inline-block;
+}
+
+nav ul li a:hover {
+    background-color: #007bff;
+    color: #fff;
+}

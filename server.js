@@ -1,15 +1,15 @@
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
-
+require('dotenv').config();
 const nodemailer = require('nodemailer');
 
 // Configure transporter
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'shaldonbarnes07@gmail.com',
-        pass: 'nxre ocwl ogyo kjmj'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 
@@ -44,12 +44,14 @@ const port = 3000;
 
 // PostgreSQL connection setup
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'airportdb',
-    password: 'Shaldon(10)',
-    port: 5433,
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
 });
+
+module.exports = pool;
 
 // Connect to database
 pool.connect()
