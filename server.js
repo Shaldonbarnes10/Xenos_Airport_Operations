@@ -36,6 +36,8 @@ const sendSigninEmail = (toemail, username) => {
     return transporter.sendMail(mailOptions);
 };
 
+const fs = require('fs');
+const PDFDocument = require('pdfkit');
 
 const app = express();
 const port = 3000;
@@ -57,6 +59,7 @@ pool.connect()
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/reports', express.static(path.join(__dirname, 'public/reports')));
 
 // Serve HTML files
 app.get('/signup.html', (req, res) => {
@@ -114,30 +117,26 @@ app.post('/api/signin', async (req, res) => {
     }
 });
 
-// Add new flight (WITH gate check and insert if missing)
 app.post('/api/flights', async (req, res) => {
     const { flight_name, flight_no, flight_date, dept_time, arr_time, gate_id, terminal, status } = req.body;
     if (!flight_name || !flight_no || !flight_date || !dept_time || !arr_time || !gate_id || !terminal || !status) {
         return res.status(400).json({ message: 'Missing required flight or gate data.' });
     }
 
-    const deptTimeFormatted = (dept_time);
-    const arrTimeFormatted = (arr_time);
-    const gateIdInt = parseInt(gate_id);
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        // Ensure gate exists, insert with full info if missing
-        const gateCheck = await client.query('SELECT 1 FROM GATE WHERE gate_id = $1', [gateIdInt]);
+        // Ensure gate exists, insert with terminal only if missing
+        const gateCheck = await client.query('SELECT 1 FROM GATE WHERE gate_id = $1', [gate_id]);
         if (gateCheck.rows.length === 0) {
-            await client.query('INSERT INTO GATE (gate_id, Terminal, Status) VALUES ($1, $2, $3)', [gateIdInt, terminal, status]);
+            await client.query('INSERT INTO GATE (gate_id, Terminal) VALUES ($1, $2)', [gate_id, terminal]);
         }
 
         await client.query(
-            `INSERT INTO FLIGHTS (flight_name, flight_no, flight_date, dept_time, arr_time, gate_id)
-             VALUES ($1, $2, $3, $4, $5, $6)`,
-            [flight_name, flight_no, flight_date, deptTimeFormatted, arrTimeFormatted, gateIdInt]
+            `INSERT INTO FLIGHTS (flight_name, flight_no, flight_date, dept_time, arr_time, gate_id, status)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [flight_name, flight_no, flight_date, dept_time, arr_time, gate_id, status]
         );        
 
         await client.query('COMMIT');
@@ -151,6 +150,7 @@ app.post('/api/flights', async (req, res) => {
     }
 });
 
+
 app.get('/api/flights', async (req, res) => {
     try {
         const result = await pool.query(
@@ -158,7 +158,7 @@ app.get('/api/flights', async (req, res) => {
                     TO_CHAR(f.flight_date, 'YYYY-MM-DD') AS flight_date,
                     TO_CHAR(f.dept_time, 'HH24:MI:SS') AS dept_time,
                     TO_CHAR(f.arr_time, 'HH24:MI:SS') AS arr_time,
-                    f.gate_id, g.terminal, g.status
+                    f.gate_id, g.terminal, f.status
              FROM FLIGHTS f 
              JOIN GATE g ON f.gate_id = g.gate_id
              ORDER BY f.flight_date ASC, f.dept_time ASC`
@@ -170,6 +170,7 @@ app.get('/api/flights', async (req, res) => {
     }
 });
 
+
 app.put('/api/flights/:id', async (req, res) => {
     const { flight_name, flight_no, flight_date, dept_time, arr_time, gate_id, terminal, status } = req.body;
     const flightId = req.params.id;
@@ -177,12 +178,11 @@ app.put('/api/flights/:id', async (req, res) => {
     try {
         await pool.query('BEGIN');
 
-        // Make sure gate info is updated or inserted
         const gateCheck = await pool.query('SELECT 1 FROM GATE WHERE gate_id = $1', [gate_id]);
         if (gateCheck.rows.length === 0) {
-            await pool.query('INSERT INTO GATE (gate_id, Terminal, Status) VALUES ($1, $2, $3)', [gate_id, terminal, status]);
+            await pool.query('INSERT INTO GATE (gate_id, Terminal) VALUES ($1, $2)', [gate_id, terminal]);
         } else {
-            await pool.query('UPDATE GATE SET Terminal = $2, Status = $3 WHERE gate_id = $1', [gate_id, terminal, status]);
+            await pool.query('UPDATE GATE SET Terminal = $2 WHERE gate_id = $1', [gate_id, terminal]);
         }
 
         await pool.query(
@@ -192,9 +192,10 @@ app.put('/api/flights/:id', async (req, res) => {
                  flight_date = $3,
                  dept_time = $4,
                  arr_time = $5,
-                 gate_id = $6
-             WHERE flight_id = $7`,
-            [flight_name, flight_no, flight_date, dept_time, arr_time, gate_id, flightId]
+                 gate_id = $6,
+                 status = $7
+             WHERE flight_id = $8`,
+            [flight_name, flight_no, flight_date, dept_time, arr_time, gate_id, status, flightId]
         );
 
         await pool.query('COMMIT');
@@ -206,6 +207,7 @@ app.put('/api/flights/:id', async (req, res) => {
     }
 });
 
+
 // Delete a flight
 app.delete('/api/flights/:id', async (req, res) => {
     try {
@@ -216,7 +218,6 @@ app.delete('/api/flights/:id', async (req, res) => {
         res.status(500).json({ message: 'Failed to delete flight.' });
     }
 });
-
 
 // Get all passengers
 app.get('/api/passengers', async (req, res) => {
@@ -235,17 +236,250 @@ app.get('/api/passengers', async (req, res) => {
 app.post('/api/passengers', async (req, res) => {
     const { pass_name, flight_name, flight_no, dept_time } = req.body;
     try {
-        await pool.query(
+        const result = await pool.query(
             `INSERT INTO PASSENGERS (pass_name, flight_name, flight_no, dept_time) 
-             VALUES ($1, $2, $3, $4)`,
+             VALUES ($1, $2, $3, $4) RETURNING *`, // Return the newly created passenger
             [pass_name, flight_name, flight_no, dept_time]
         );
-        res.status(201).json({ message: 'Passenger added successfully' });
+        res.status(201).json({ message: 'Passenger added successfully', passenger: result.rows[0] }); // Include the passenger in the response
     } catch (error) {
         console.error('Error adding passenger:', error);
         res.status(500).json({ message: 'Failed to add passenger' });
     }
 });
+
+// Update a passenger
+app.put('/api/passengers/:id', async (req, res) => {
+    try {
+        const { pass_name, flight_name, flight_no, dept_time } = req.body;
+        const result = await pool.query(
+            'UPDATE passengers SET pass_name = $1, flight_name = $2, flight_no = $3, dept_time = $4 WHERE pass_id = $5 RETURNING *',
+            [pass_name, flight_name, flight_no, dept_time, req.params.id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Passenger not found' });
+        }
+        
+        res.json({ passenger: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Delete a passenger
+app.delete('/api/passengers/:id', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'DELETE FROM passengers WHERE pass_id = $1 RETURNING *',
+            [req.params.id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Passenger not found' });
+        }
+        
+        res.json({ message: 'Passenger deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Report generation endpoint
+app.post('/api/reports', async (req, res) => {
+    const { reportType = 'general' } = req.body;
+    
+    try {
+        // Create reports directory if it doesn't exist
+        const reportsDir = path.join(__dirname, 'public', 'reports');
+        if (!fs.existsSync(reportsDir)) {
+            fs.mkdirSync(reportsDir, { recursive: true });
+        }
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const fileName = `${reportType}_report_${timestamp}.pdf`;
+        const filePath = path.join(reportsDir, fileName);
+        const publicPath = `/reports/${fileName}`;
+
+        // Create PDF document
+        const doc = new PDFDocument();
+        const stream = fs.createWriteStream(filePath);
+        doc.pipe(stream);
+
+        // Common header for all reports
+        doc.fontSize(20).text('XENOS Flight Report', { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(12).text(`Report Type: ${reportType.replace(/_/g, ' ').toUpperCase()}`, { align: 'center' });
+        doc.fontSize(10).text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
+        doc.moveDown(2);
+
+        // Generate different report types
+        switch (reportType) {
+            case 'detailed':
+                await generateDetailedReport(doc);
+                break;
+            case 'passenger':
+                await generatePassengerReport(doc);
+                break;
+            default: // general
+                await generateGeneralReport(doc);
+        }
+
+        doc.end();
+
+        stream.on('finish', () => {
+            res.status(201).json({ 
+                message: 'Report generated successfully', 
+                filePath: publicPath,
+                fileName 
+            });
+        });
+
+    } catch (error) {
+        console.error('Error generating report:', error);
+        res.status(500).json({ 
+            message: `Failed to generate ${reportType} report`,
+            error: error.message 
+        });
+    }
+});
+
+
+// Detailed Report generation endpoint
+app.post('/api/reports/detailed', async (req, res) => {
+    try {
+        // Create reports directory
+        const reportsDir = path.join(__dirname, 'public', 'reports');
+        if (!fs.existsSync(reportsDir)) {
+            fs.mkdirSync(reportsDir, { recursive: true });
+        }
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const fileName = `detailed_report_${timestamp}.pdf`;
+        const filePath = path.join(reportsDir, fileName);
+        const publicPath = `/reports/${fileName}`;
+
+        // Create PDF document
+        const doc = new PDFDocument({ margin: 50 });
+        const stream = fs.createWriteStream(filePath);
+        doc.pipe(stream);
+
+        // Report Header
+        doc.fontSize(20).text('XENOS Detailed Flight Report', { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(10).text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
+        doc.moveDown(2);
+
+        // 1. Airline Status Table
+        doc.fontSize(14).text('Airline Status Overview', { underline: true });
+        doc.moveDown(0.5);
+
+        // Get airline status data
+        const airlineStatusData = await pool.query(`
+            SELECT 
+                f.Flight_name AS airline_name,
+                COUNT(f.Flight_id) AS num_flights,
+                SUM(CASE WHEN f.Status ILIKE ANY (ARRAY['ontime', 'boarding']) THEN 1 ELSE 0 END) AS on_time,
+                SUM(CASE WHEN f.Status ILIKE 'Delayed' THEN 1 ELSE 0 END) AS delayed
+            FROM flights f
+            GROUP BY f.Flight_name
+            ORDER BY f.Flight_name
+        `);
+        
+    
+        // Draw airline status table
+        drawTable(doc, 
+            ['Airline Name', 'Number of Flights', 'On Time', 'Delayed'],
+            airlineStatusData.rows.map(row => [
+                row.airline_name,
+                row.num_flights.toString(),
+                row.on_time.toString(),
+                row.delayed.toString()
+            ]),
+            [180, 100, 80, 80],
+            true
+        );
+        
+
+        doc.addPage(); // Add new page for passenger table
+
+        // 2. Passenger Details Table
+        doc.fontSize(14).text('Passenger Flight Details', { underline: true });
+        doc.moveDown(0.5);
+
+        // Get passenger data
+        const passengerData = await pool.query(`
+            SELECT 
+                p.Pass_name AS passenger_name,
+                COUNT(DISTINCT p.Pass_id) AS num_flights
+            FROM passengers p
+            GROUP BY p.Pass_name
+            ORDER BY p.Pass_name
+        `);
+
+        // Draw passenger table
+        drawTable(doc,
+            ['Passenger Name', 'Total Flights'],
+            passengerData.rows.map(row => [
+                row.passenger_name,
+                row.num_flights.toString()
+            ]),
+            [250, 100]
+        );
+
+        doc.end();
+
+        stream.on('finish', () => {
+            res.status(201).json({ 
+                message: 'Detailed report generated successfully', 
+                filePath: publicPath,
+                fileName 
+            });
+        });
+
+    } catch (error) {
+        console.error('Error generating detailed report:', error);
+        res.status(500).json({ 
+            message: 'Failed to generate detailed report',
+            error: error.message 
+        });
+    }
+});
+
+
+// Helper function to draw tables in PDF
+function drawTable(doc, headers, rows, columnWidths) {
+    const startY = doc.y;
+    const startX = 50;
+    const rowHeight = 20;
+    const headerHeight = 25;
+    
+    // Draw headers
+    doc.font('Helvetica-Bold');
+    let x = startX;
+    headers.forEach((header, i) => {
+        doc.text(header, x, startY, { width: columnWidths[i], align: 'left' });
+        x += columnWidths[i];
+    });
+    
+    // Draw rows
+    doc.font('Helvetica');
+    rows.forEach((row, rowIndex) => {
+        x = startX;
+        row.forEach((cell, colIndex) => {
+            doc.text(cell, x, startY + headerHeight + (rowIndex * rowHeight), { 
+                width: columnWidths[colIndex],
+                align: 'left'
+            });
+            x += columnWidths[colIndex];
+        });
+    });
+    
+    // Update document position
+    doc.y = startY + headerHeight + (rows.length * rowHeight) + 10;
+}
 
 
 

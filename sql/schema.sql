@@ -8,7 +8,6 @@ CREATE DATABASE airportdb;
 CREATE TABLE GATE (
     Gate_id SERIAL PRIMARY KEY,
     Terminal VARCHAR(10),
-    Status VARCHAR(20)
 );
 
 -- FLIGHTS table
@@ -19,6 +18,7 @@ CREATE TABLE FLIGHTS (
     Dept_time TIME,
     Arr_time TIME,
     Gate_id INT,
+    Status VARCHAR(20)
     FOREIGN KEY (Gate_id) REFERENCES GATE(Gate_id),
     Flight_date DATE
 );
@@ -47,6 +47,7 @@ CREATE TABLE REPORTS (
     Admin_id INT,
     Report_type VARCHAR(50),
     Generated_on TIMESTAMP,
+    file_path VARCHAR(255),
     FOREIGN KEY (Pass_id) REFERENCES PASSENGERS(Pass_id),
     FOREIGN KEY (Admin_id) REFERENCES ADMIN_USERS(Admin_id)
 );
