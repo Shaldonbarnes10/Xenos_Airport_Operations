@@ -1,4 +1,18 @@
+function showLoader() {
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'flex';
+}
+
+function hideLoader() {
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'none';
+}
+
+
 document.addEventListener('DOMContentLoaded', function () {
+    hideLoader(); // Hide loader if it shows up by default
+
+    // Signup
     document.getElementById('signupForm')?.addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -13,21 +27,18 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Check if passwords match
         if (password !== confirmPassword) {
             alert("Passwords do not match!");
             return;
         }
 
-        // Prepare the data to be sent
         const userData = { username, password, designation };
 
         try {
+            showLoader();
             const response = await fetch('/api/signup', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(userData)
             });
 
@@ -37,33 +48,30 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const result = await response.json();
-            alert(result.message);  // Alert success message from the server
-
-            // Reset the form
+            // alert(result.message);
             e.target.reset();
             window.location.href = '/signin.html';
         } catch (error) {
             console.error('Signup failed:', error);
-            alert('Signup failed: ' + error.message);  // Show error message to the user
+            alert('Signup failed: ' + error.message);
+        } finally {
+            hideLoader();
         }
     });
 
-    // Signin Form
+    // Signin
     document.getElementById('signinForm')?.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-
-        // Prepare the data to be sent
         const userData = { username, password };
 
         try {
+            showLoader();
             const response = await fetch('/api/signin', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(userData)
             });
 
@@ -73,17 +81,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const result = await response.json();
-            //alert(result.message);  // Alert success message from the server
-
-            // Reset the form
             e.target.reset();
             window.location.href = '/landingPage.html';
         } catch (error) {
             console.error('Signin failed:', error);
-            alert('Signin failed: ' + error.message);  // Show error message to the user
+            alert('Signin failed: ' + error.message);
+        } finally {
+            hideLoader();
         }
     });
 });
-
-
 
