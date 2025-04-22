@@ -34,8 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </td>
         `;
         tableBody.appendChild(row);
-
-        // Add event listeners to the new buttons
+        
         row.querySelector('.edit-btn').addEventListener('click', () => editPassenger(p));
         row.querySelector('.delete-btn').addEventListener('click', () => deletePassenger(p.pass_id));
     }
