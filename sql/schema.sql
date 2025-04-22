@@ -7,7 +7,7 @@ CREATE DATABASE airportdb;
 -- GATE table
 CREATE TABLE GATE (
     Gate_id SERIAL PRIMARY KEY,
-    Terminal VARCHAR(10),
+    Terminal VARCHAR(10)
 );
 
 -- FLIGHTS table
@@ -20,7 +20,7 @@ CREATE TABLE FLIGHTS (
     Gate_id INT,
     Flight_date DATE,
     Status VARCHAR(20),
-    FOREIGN KEY (Gate_id) REFERENCES GATE(Gate_id),
+    FOREIGN KEY (Gate_id) REFERENCES GATE(Gate_id)
 );
 
 -- PASSENGERS table
