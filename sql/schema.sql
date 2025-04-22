@@ -29,7 +29,7 @@ CREATE TABLE PASSENGERS (
     Pass_name VARCHAR(100),
     Flight_name VARCHAR(50),
     Flight_no VARCHAR(20),
-    Dept_time TIME
+    dept_time TIMESTAMP WITHOUT TIME ZONE
 );
 
 -- ADMIN_USERS table
