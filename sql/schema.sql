@@ -19,7 +19,8 @@ CREATE TABLE FLIGHTS (
     Dept_time TIME,
     Arr_time TIME,
     Gate_id INT,
-    FOREIGN KEY (Gate_id) REFERENCES GATE(Gate_id)
+    FOREIGN KEY (Gate_id) REFERENCES GATE(Gate_id),
+    Flight_date DATE
 );
 
 -- PASSENGERS table
