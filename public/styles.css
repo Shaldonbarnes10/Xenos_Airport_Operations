@@ -1,8 +1,8 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4; /* Fallback color */
-    background-image: url('pic.jpg'); /* Add a leading slash *//* Using the filename directly */
+    background-color: #f4f4f4;
+    background-image: url('pic.jpg');
     display: flex;
     justify-content: center;
     align-items: center;
@@ -15,7 +15,7 @@ body {
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 300px; /* Limit container width */
+    width: 300px;
 }
 
 input {
@@ -23,9 +23,9 @@ input {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
-    border: 1px solid #ddd; /* Add a border for better visibility */
-    border-radius: 4px; /* Add some rounded corners */
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
 
 button {
@@ -35,20 +35,18 @@ button {
     color: white;
     border: none;
     cursor: pointer;
-    border-radius: 4px; /* Add some rounded corners */
+    border-radius: 4px;
 }
 
 button:hover {
     background-color: #125195;
 }
 
-/* Add some spacing to the link */
 p {
     margin-top: 15px;
     text-align: center;
 }
 
-/* Loader styles */
 #loader {
     position: fixed;
     top: 0;
