@@ -7,6 +7,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const confirmPassword = document.getElementById('confirmPassword').value;
         const designation = document.getElementById('designation').value;
 
+        const passwordRequirements = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordRequirements.test(password)) {
+            alert("Password must be at least 8 characters long, include at least one uppercase letter, and one number.");
+            return;
+        }
+
         // Check if passwords match
         if (password !== confirmPassword) {
             alert("Passwords do not match!");
