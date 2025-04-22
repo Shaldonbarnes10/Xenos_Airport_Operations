@@ -1,49 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Flight Management</title>
-    <link rel="stylesheet" href="flights_style.css">
+    <link rel="stylesheet" href="flights_style.css" />
 </head>
 <body>
     <div class="container">
         <h1>Flight Management System</h1>
 
-        <form id="flightForm">
+        <form id="flightForm" novalidate>
             <div class="form-group">
-                <input type="text" id="flight_name" placeholder="Flight Name" required>
+                <label for="flight_name" class="sr-only">Flight Name</label>
+                <input type="text" id="flight_name" placeholder="Flight Name" required aria-label="Flight Name" />
             </div>
 
             <div class="form-group">
-                <input type="text" id="flight_no" placeholder="Flight Number" required>
+                <label for="flight_no" class="sr-only">Flight Number</label>
+                <input type="text" id="flight_no" placeholder="Flight Number" required aria-label="Flight Number" />
             </div>
 
             <div class="form-group">
                 <label for="flight_date">Flight Date</label>
-                <input type="date" id="flight_date" required>
+                <input type="date" id="flight_date" required />
             </div>
 
             <div class="form-group">
                 <label for="dept_time">Departure Time</label>
-                <input type="time" id="dept_time" required step="1">
+                <input type="time" id="dept_time" required step="1" />
             </div>
 
             <div class="form-group">
                 <label for="arr_time">Arrival Time</label>
-                <input type="time" id="arr_time" required step="1">
+                <input type="time" id="arr_time" required step="1" />
             </div>
 
             <div class="form-group">
-                <input type="number" id="gate_id" placeholder="Gate Number" required>
+                <label for="gate_id" class="sr-only">Gate Number</label>
+                <input type="number" id="gate_id" placeholder="Gate Number" required aria-label="Gate Number" />
             </div>
 
             <div class="form-group">
-                <input type="text" id="terminal" placeholder="Terminal" required>
+                <label for="terminal" class="sr-only">Terminal</label>
+                <input type="text" id="terminal" placeholder="Terminal" required aria-label="Terminal" />
             </div>
 
             <div class="form-group">
-                <select id="status" required>
+                <label for="status">Status</label>
+                <select id="status" required aria-label="Flight Status">
                     <option value="" disabled selected>Select Status</option>
                     <option value="ontime">On Time</option>
                     <option value="boarding">Boarding</option>
@@ -56,7 +61,7 @@
         </form>
 
         <h2>Flight Schedule</h2>
-        <table id="flightTable">
+        <table id="flightTable" aria-label="Flight Schedule Table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -71,10 +76,15 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+                <!-- Flight rows will be dynamically added here -->
+            </tbody>
         </table>
+
+        <br />
+        <a href="landingPage.html">Back to Home</a>
     </div>
 
-    <script src="/flightscript.js"></script>
+    <script src="flightscript.js"></script>
 </body>
 </html>

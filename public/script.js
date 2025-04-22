@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Signup Form
     document.getElementById('signupForm')?.addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -68,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const result = await response.json();
-            alert(result.message);  // Alert success message from the server
+            //alert(result.message);  // Alert success message from the server
 
             // Reset the form
             e.target.reset();

@@ -56,7 +56,7 @@ flightForm.addEventListener('submit', async (e) => {
                 throw new Error(error.message || 'Failed to add flight');
             }
 
-            alert('Flight added successfully!');
+            //alert('Flight added successfully!');
         }
 
         flightForm.reset();
