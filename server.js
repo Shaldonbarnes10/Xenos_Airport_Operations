@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
 const sendWelcomeEmail = (toemail, username) => {
     const now = new Date().toLocaleString();
     const mailOptions = {
-        from: 'shaldonbarnes07@gmail.com',
+        from: 'xenosairportoperations@gmail.com',
         to: toemail,
         subject: 'Welcome to Xenos Airport Admin Panel ✈️',
         html: `<h3>Hi ${username},</h3><p>Welcome! You’ve successfully signed up as an <b>Admin User</b> at ${now}.</p>`
@@ -30,7 +30,7 @@ const sendSigninEmail = (toemail, username) => {
     const mailOptions = {
         from: 'shaldonbarnes07@gmail.com',
         to: toemail,
-        subject: 'Xenos✈️ Signed in Sucessfully!!',
+        subject: 'Xenos✈️ You have Signed in Sucessfully on our website!!',
         html: `<h3>Hi ${username},</h3><p>Welcome! You’ve successfully signed in at ${now}</p><p> Visit our website to avail exceptional airport management services</p>`
     };
     return transporter.sendMail(mailOptions);
