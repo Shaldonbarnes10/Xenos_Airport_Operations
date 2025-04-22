@@ -116,8 +116,8 @@ app.post('/api/signin', async (req, res) => {
 
 // Add new flight (WITH gate check and insert if missing)
 app.post('/api/flights', async (req, res) => {
-    const { flight_name, flight_no, dept_time, arr_time, gate_id, terminal, status } = req.body;
-    if (!flight_name || !flight_no || !dept_time || !arr_time || !gate_id || !terminal || !status) {
+    const { flight_name, flight_no, flight_date, dept_time, arr_time, gate_id, terminal, status } = req.body;
+    if (!flight_name || !flight_no || !flight_date || !dept_time || !arr_time || !gate_id || !terminal || !status) {
         return res.status(400).json({ message: 'Missing required flight or gate data.' });
     }
 
@@ -135,10 +135,10 @@ app.post('/api/flights', async (req, res) => {
         }
 
         await client.query(
-            `INSERT INTO FLIGHTS (flight_name, flight_no, dept_time, arr_time, gate_id)
-             VALUES ($1, $2, $3, $4, $5)`,
-            [flight_name, flight_no, deptTimeFormatted, arrTimeFormatted, gateIdInt]
-        );
+            `INSERT INTO FLIGHTS (flight_name, flight_no, flight_date, dept_time, arr_time, gate_id)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [flight_name, flight_no, flight_date, deptTimeFormatted, arrTimeFormatted, gateIdInt]
+        );        
 
         await client.query('COMMIT');
         res.status(201).json({ message: 'Flight added successfully.' });
@@ -155,12 +155,14 @@ app.get('/api/flights', async (req, res) => {
     try {
         const result = await pool.query(
             `SELECT f.flight_id, f.flight_name, f.flight_no, 
-                    TO_CHAR(f.Dept_time, 'HH24:MI:SS') AS dept_time, 
-                    TO_CHAR(f.Arr_time, 'HH24:MI:SS') AS arr_time,
+                    TO_CHAR(f.flight_date, 'YYYY-MM-DD') AS flight_date,
+                    TO_CHAR(f.dept_time, 'HH24:MI:SS') AS dept_time,
+                    TO_CHAR(f.arr_time, 'HH24:MI:SS') AS arr_time,
                     f.gate_id, g.terminal, g.status
-             FROM FLIGHTS f JOIN GATE g ON f.gate_id = g.gate_id
-             ORDER BY f.flight_id`
-        );
+             FROM FLIGHTS f 
+             JOIN GATE g ON f.gate_id = g.gate_id
+             ORDER BY f.flight_date ASC, f.dept_time ASC`
+        );               
         res.json(result.rows);
     } catch (error) {
         console.error('Error fetching flights:', error);
@@ -168,6 +170,41 @@ app.get('/api/flights', async (req, res) => {
     }
 });
 
+app.put('/api/flights/:id', async (req, res) => {
+    const { flight_name, flight_no, flight_date, dept_time, arr_time, gate_id, terminal, status } = req.body;
+    const flightId = req.params.id;
+
+    try {
+        await pool.query('BEGIN');
+
+        // Make sure gate info is updated or inserted
+        const gateCheck = await pool.query('SELECT 1 FROM GATE WHERE gate_id = $1', [gate_id]);
+        if (gateCheck.rows.length === 0) {
+            await pool.query('INSERT INTO GATE (gate_id, Terminal, Status) VALUES ($1, $2, $3)', [gate_id, terminal, status]);
+        } else {
+            await pool.query('UPDATE GATE SET Terminal = $2, Status = $3 WHERE gate_id = $1', [gate_id, terminal, status]);
+        }
+
+        await pool.query(
+            `UPDATE FLIGHTS
+             SET flight_name = $1,
+                 flight_no = $2,
+                 flight_date = $3,
+                 dept_time = $4,
+                 arr_time = $5,
+                 gate_id = $6
+             WHERE flight_id = $7`,
+            [flight_name, flight_no, flight_date, dept_time, arr_time, gate_id, flightId]
+        );
+
+        await pool.query('COMMIT');
+        res.status(200).json({ message: 'Flight updated successfully' });
+    } catch (error) {
+        await pool.query('ROLLBACK');
+        console.error('Error updating flight:', error);
+        res.status(500).json({ message: 'Failed to update flight' });
+    }
+});
 
 // Delete a flight
 app.delete('/api/flights/:id', async (req, res) => {
