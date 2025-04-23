@@ -4,7 +4,6 @@ const path = require('path');
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-// Configure transporter
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -13,7 +12,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Send email function
 const sendWelcomeEmail = (toemail, username) => {
     const now = new Date().toLocaleString();
     const mailOptions = {
@@ -53,7 +51,6 @@ const pool = new Pool({
 
 module.exports = pool;
 
-// Connect to database
 pool.connect()
     .then(() => console.log('Connected to the database'))
     .catch((err) => console.error('Database connection failed:', err));
@@ -63,7 +60,6 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/reports', express.static(path.join(__dirname, 'public/reports')));
 
-// Serve HTML files
 app.get('/signup.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
@@ -72,7 +68,6 @@ app.get('/signin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'signin.html'));
 });
 
-// Signup endpoint
 app.post('/api/signup', async (req, res) => {
     const { username, password, designation } = req.body;
 
@@ -98,7 +93,6 @@ app.post('/api/signup', async (req, res) => {
 });
 
 
-// Signin endpoint
 app.post('/api/signin', async (req, res) => {
     const { username, password } = req.body;
 
@@ -210,7 +204,6 @@ app.put('/api/flights/:id', async (req, res) => {
 });
 
 
-// Delete a flight
 app.delete('/api/flights/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM FLIGHTS WHERE flight_id = $1', [req.params.id]);
@@ -221,7 +214,6 @@ app.delete('/api/flights/:id', async (req, res) => {
     }
 });
 
-// Get all passengers
 app.get('/api/passengers', async (req, res) => {
     try {
         const result = await pool.query(
@@ -405,9 +397,7 @@ app.post('/api/reports/detailed', async (req, res) => {
         );
         
 
-        doc.addPage(); // Add new page for passenger table
-
-        // 2. Passenger Details Table
+        doc.addPage();
         doc.fontSize(14).text('Passenger Flight Details', { underline: true });
         doc.moveDown(0.5);
 
@@ -451,14 +441,11 @@ app.post('/api/reports/detailed', async (req, res) => {
 });
 
 
-// Helper function to draw tables in PDF
 function drawTable(doc, headers, rows, columnWidths) {
     const startY = doc.y;
     const startX = 50;
     const rowHeight = 20;
     const headerHeight = 25;
-    
-    // Draw headers
     doc.font('Helvetica-Bold');
     let x = startX;
     headers.forEach((header, i) => {
@@ -477,15 +464,10 @@ function drawTable(doc, headers, rows, columnWidths) {
             });
             x += columnWidths[colIndex];
         });
-    });
-    
-    // Update document position
+    });    
     doc.y = startY + headerHeight + (rows.length * rowHeight) + 10;
 }
 
-
-
-// Start server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}/signup.html`);
 });
