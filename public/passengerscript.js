@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/passengers');
             const passengers = await res.json();
 
-            tableBody.innerHTML = ''; // Clear previous
+            tableBody.innerHTML = '';
             passengers.forEach(addPassengerToTable);
         } catch (err) {
             console.error('Failed to fetch passengers:', err);

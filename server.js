@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 const sendWelcomeEmail = (toemail, username) => {
     const now = new Date().toLocaleString();
     const mailOptions = {
-        from: 'xenosairportoperations@gmail.com',
+        from: 'shaldonbarnes.ai@gmail.com',
         to: toemail,
         subject: 'Welcome to Xenos Airport Admin Panel ✈️',
         html: `<h3>Hi ${username},</h3><p>Welcome! You’ve successfully signed up as an <b>Admin User</b> at ${now}.</p>`
@@ -52,7 +52,7 @@ const pool = new Pool({
 module.exports = pool;
 
 pool.connect()
-    .then(() => console.log('Connected to the database'))
+    .then(() => console.log('Connected to the database ✅'))
     .catch((err) => console.error('Database connection failed:', err));
 
 // Middleware
